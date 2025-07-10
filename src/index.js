@@ -9,9 +9,10 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
+app.use(express.static('src/public'));
 
 app.get("/", (req, res) => {
-  res.send("Stew Night API is running!");
+  res.sendFile(process.cwd() + '/src/public/index.html');
 });
 
 // POST endpoint to create a new movie night
