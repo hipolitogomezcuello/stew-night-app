@@ -10,6 +10,17 @@ export const initializeDatabase = async () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    
+    await db.runAsync(`
+      CREATE TABLE IF NOT EXISTS movies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        year INTEGER,
+        reference_link TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
