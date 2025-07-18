@@ -103,6 +103,16 @@ class MovieNight {
     }
   }
 
+  // Delete movie night by ID
+  static async deleteById(id) {
+    try {
+      const result = await db.runAsync('DELETE FROM movie_nights WHERE id = ?', [id]);
+      return result.changes > 0;
+    } catch (error) {
+      throw new Error(`Error deleting movie night: ${error.message}`);
+    }
+  }
+
 }
 
 export default MovieNight; 
