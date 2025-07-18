@@ -4,6 +4,7 @@ import cors from "cors";
 import { initializeDatabase } from "./scripts/initDatabase.js";
 import movieNightsRouter from "./routes/movieNights.js";
 import moviesRouter from "./routes/movies.js";
+import authRouter from "./routes/auth.js";
 
 dotenv.config();
 const app = express();
@@ -20,7 +21,16 @@ app.get("/admin", (req, res) => {
   res.sendFile(process.cwd() + '/src/public/admin.html');
 });
 
+app.get("/login", (req, res) => {
+  res.sendFile(process.cwd() + '/src/public/login.html');
+});
+
+app.get("/register", (req, res) => {
+  res.sendFile(process.cwd() + '/src/public/register.html');
+});
+
 // Use route modules
+app.use("/api/auth", authRouter);
 app.use("/api/movie-nights", movieNightsRouter);
 app.use("/api/movies", moviesRouter);
 

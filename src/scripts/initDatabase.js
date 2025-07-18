@@ -33,6 +33,16 @@ export const initializeDatabase = async () => {
       )
     `);
     
+    await db.runAsync(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
