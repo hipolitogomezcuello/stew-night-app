@@ -16,9 +16,13 @@ app.get("/", (req, res) => {
   res.sendFile(process.cwd() + '/src/public/index.html');
 });
 
+app.get("/admin", (req, res) => {
+  res.sendFile(process.cwd() + '/src/public/admin.html');
+});
+
 // Use route modules
-app.use("api/movie-nights", movieNightsRouter);
-app.use("api/movies", moviesRouter);
+app.use("/api/movie-nights", movieNightsRouter);
+app.use("/api/movies", moviesRouter);
 
 const PORT = process.env.PORT || 3000;
 

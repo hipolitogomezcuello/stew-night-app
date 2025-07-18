@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Movie Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    .movie-card {
+      transition: transform 0.2s;
+    }
+    .movie-card:hover {
+      transform: translateY(-2px);
+    }
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+      color: #0d6efd;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <i class="bi bi-film"></i> Movie Admin
+      </a>
+      <div class="navbar-nav ms-auto">
+        <a class="nav-link" href="/">← Back to Home</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div class="row">
+      <div class="col-lg-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Add New Movie</h5>
+          </div>
+          <div class="card-body">
+            <form id="addMovieForm">
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="title" placeholder="Movie Title" required>
+                <label for="title">Movie Title *</label>
+              </div>
+              
+              <div class="form-floating mb-3">
+                <input type="number" class="form-control" id="year" placeholder="Year" min="1900" max="2030">
+                <label for="year">Year</label>
+              </div>
+              
+              <div class="form-floating mb-3">
+                <input type="url" class="form-control" id="reference_link" placeholder="Reference Link">
+                <label for="reference_link">Reference Link (IMDB, etc.)</label>
+              </div>
+              
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-plus-circle"></i> Add Movie
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-collection"></i> All Movies</h5>
+            <button class="btn btn-light btn-sm" onclick="loadMovies()">
+              <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+          </div>
+          <div class="card-body">
+            <div id="loading" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2 text-muted">Loading movies...</p>
+            </div>
+            
+            <div id="moviesList" class="row g-3" style="display: none;">
+              <!-- Movies will be loaded here -->
+            </div>
+            
+            <div id="noMovies" class="text-center py-4" style="display: none;">
+              <i class="bi bi-film text-muted" style="font-size: 3rem;"></i>
+              <p class="mt-2 text-muted">No movies found. Add your first movie!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Toast -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="successToast" class="toast" role="alert">
+      <div class="toast-header bg-success text-white">
+        <i class="bi bi-check-circle me-2"></i>
+        <strong class="me-auto">Success</strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+      </div>
+      <div class="toast-body" id="successMessage">
+        Movie added successfully!
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Toast -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="errorToast" class="toast" role="alert">
+      <div class="toast-header bg-danger text-white">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong class="me-auto">Error</strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+      </div>
+      <div class="toast-body" id="errorMessage">
+        An error occurred.
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Toast instances
+    let successToast, errorToast;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize toasts
+      successToast = new bootstrap.Toast(document.getElementById('successToast'));
+      errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
+      
+      // Load movies on page load
+      loadMovies();
+      
+      // Handle form submission
+      document.getElementById('addMovieForm').addEventListener('submit', handleAddMovie);
+    });
+
+    async function loadMovies() {
+      try {
+        const response = await fetch('/api/movies');
+        const movies = await response.json();
+        
+        displayMovies(movies);
+      } catch (error) {
+        console.error('Error loading movies:', error);
+        showError('Failed to load movies');
+      }
+    }
+
+    function displayMovies(movies) {
+      const moviesList = document.getElementById('moviesList');
+      const loading = document.getElementById('loading');
+      const noMovies = document.getElementById('noMovies');
+      
+      loading.style.display = 'none';
+      
+      if (movies.length === 0) {
+        noMovies.style.display = 'block';
+        moviesList.style.display = 'none';
+        return;
+      }
+      
+      noMovies.style.display = 'none';
+      moviesList.style.display = 'block';
+      
+      moviesList.innerHTML = movies.map(movie => `
+        <div class="col-md-6 col-lg-4">
+          <div class="card movie-card h-100 shadow-sm">
+            <div class="card-body">
+              <h6 class="card-title text-truncate" title="${movie.title}">${movie.title}</h6>
+              ${movie.year ? `<p class="card-text text-muted small mb-2"><i class="bi bi-calendar"></i> ${movie.year}</p>` : ''}
+              ${movie.reference_link ? `<a href="${movie.reference_link}" target="_blank" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                <i class="bi bi-link-45deg"></i> View Details
+              </a>` : '<span class="text-muted small d-block mb-2">No reference link</span>'}
+              <button class="btn btn-outline-danger btn-sm w-100" onclick="deleteMovie(${movie.id}, '${movie.title.replace(/'/g, "\\'")}')">
+                <i class="bi bi-trash"></i> Delete
+              </button>
+            </div>
+            <div class="card-footer bg-transparent">
+              <small class="text-muted">ID: ${movie.id}</small>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function handleAddMovie(event) {
+      event.preventDefault();
+      
+      const formData = new FormData(event.target);
+      const movieData = {
+        title: formData.get('title') || document.getElementById('title').value,
+        year: formData.get('year') || document.getElementById('year').value || null,
+        reference_link: formData.get('reference_link') || document.getElementById('reference_link').value || null
+      };
+      
+      // Convert empty strings to null
+      if (movieData.year === '') movieData.year = null;
+      if (movieData.reference_link === '') movieData.reference_link = null;
+      
+      try {
+        const response = await fetch('/api/movies', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(movieData)
+        });
+        
+        if (response.ok) {
+          const newMovie = await response.json();
+          showSuccess(`Movie "${newMovie.title}" added successfully!`);
+          event.target.reset();
+          loadMovies(); // Refresh the list
+        } else {
+          const error = await response.json();
+          showError(error.error || 'Failed to add movie');
+        }
+      } catch (error) {
+        console.error('Error adding movie:', error);
+        showError('Failed to add movie');
+      }
+    }
+
+    function showSuccess(message) {
+      document.getElementById('successMessage').textContent = message;
+      successToast.show();
+    }
+
+    function showError(message) {
+      document.getElementById('errorMessage').textContent = message;
+      errorToast.show();
+    }
+
+    async function deleteMovie(id, title) {
+      if (!confirm(`Are you sure you want to delete "${title}"?`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/movies/${id}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          showSuccess(`Movie "${title}" deleted successfully!`);
+          loadMovies(); // Refresh the list
+        } else {
+          const error = await response.json();
+          showError(error.error || 'Failed to delete movie');
+        }
+      } catch (error) {
+        console.error('Error deleting movie:', error);
+        showError('Failed to delete movie');
+      }
+    }
+  </script>
+</body>
+</html> 

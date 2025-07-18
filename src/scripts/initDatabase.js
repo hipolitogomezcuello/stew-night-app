@@ -21,6 +21,18 @@ export const initializeDatabase = async () => {
       )
     `);
     
+    await db.runAsync(`
+      CREATE TABLE IF NOT EXISTS movie_night_proposals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        movie_night_id INTEGER NOT NULL,
+        movie_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (movie_night_id) REFERENCES movie_nights (id) ON DELETE CASCADE,
+        FOREIGN KEY (movie_id) REFERENCES movies (id) ON DELETE CASCADE,
+        UNIQUE(movie_night_id, movie_id)
+      )
+    `);
+    
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);

@@ -48,4 +48,21 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// DELETE endpoint to delete a movie by ID
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Movie.deleteById(id);
+    
+    if (!deleted) {
+      return res.status(404).json({ error: "Movie not found" });
+    }
+    
+    res.json({ message: "Movie deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting movie:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export default router; 

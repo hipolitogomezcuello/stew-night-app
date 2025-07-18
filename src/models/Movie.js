@@ -44,6 +44,16 @@ class Movie {
       throw new Error(`Error fetching movie: ${error.message}`);
     }
   }
+
+  // Delete movie by ID
+  static async deleteById(id) {
+    try {
+      const result = await db.runAsync('DELETE FROM movies WHERE id = ?', [id]);
+      return result.changes > 0;
+    } catch (error) {
+      throw new Error(`Error deleting movie: ${error.message}`);
+    }
+  }
 }
 
 export default Movie; 
